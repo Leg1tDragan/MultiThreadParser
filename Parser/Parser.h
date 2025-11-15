@@ -26,6 +26,7 @@ public:
 	void validatePath(const std::string& file_path) const;
 	void parseLine(std::string& line);
 	void parseLines(std::vector<std::string>& lines);
+	void saveToPostgreSQL(const std::string& file_path);
 
 	void resetAnalytics();
 	void trimAndCollapse(std::string& line);

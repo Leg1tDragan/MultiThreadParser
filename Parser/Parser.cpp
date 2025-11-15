@@ -6,10 +6,11 @@
 #include <iostream>
 #include <vector>
 #include <mutex>
+#include <pqxx/pqxx>
 
 using namespace std;
 
-Parser::~Parser()	
+Parser::~Parser()
 {
 }
 
@@ -51,6 +52,39 @@ void Parser::parseLines(vector<std::string>& lines)
 	for (auto& t : threads) { t.join(); }
 }
 
+void Parser::saveToPostgreSQL(const std::string& file_path)
+{
+	try
+	{
+		pqxx::connection conn
+		(
+			"dbname=test "
+			"user=postgres "
+			"password=Test "
+			"host=localhost "
+			"port=5432 "
+		);
+
+		pqxx::work txn(conn);
+		txn.exec_params
+		(
+			"INSERT INTO analytics (file_path, total_words, total_chars, total_letters, total_digits) "
+			"VALUES ($1, $2, $3, $4, $5)",
+			file_path,
+			static_cast<long long>(analytics.totalWords),
+			static_cast<long long>(analytics.totalChars),
+			static_cast<long long>(analytics.totalLetters),
+			static_cast<long long>(analytics.totalDigits)
+		);
+		txn.commit();
+		if (settings.successfullySendToDatabaseMessage == true) { cout << "[Approved] Analytics sent (database)" << endl; }
+	}
+	catch (const std::exception& e)
+	{
+		cerr << "[Error] saveToPostgreSql " << e.what() << endl;
+	}
+}
+
 vector<string> Parser::loadLines(const string& file_path)
 {
 	validatePath(file_path);
@@ -73,6 +107,9 @@ bool Parser::readFile(const string& file_path)
 	validatePath(file_path);
 	auto lines = loadLines(file_path);
 	parseLines(lines);
+
+	saveToPostgreSQL(file_path);
+
 	return true;
 }
 
@@ -86,7 +123,7 @@ void Parser::trimAndCollapse(string& line)
 
 	while (!line.empty() && isspace((unsigned char)line.back()))
 		line.pop_back();
-	
+
 	for (; i < line.size(); i++)
 	{
 		if (!isspace((unsigned char)line[i]))
@@ -132,10 +169,10 @@ void Parser::parseLine(string& line)
 	size_t localTotalWords = 0, localTotalDigits = 0, localTotalLetters = 0;
 	// ---
 
-	if (settings.textLog) 
-	{ 
+	if (settings.textLog)
+	{
 		lock_guard<mutex> lock(count_mtx);
-		cout << "Before: [" << line << "]\n"; 
+		cout << "Before: [" << line << "]\n";
 	}
 
 	// ---
@@ -223,10 +260,10 @@ void Parser::parseLine(string& line)
 
 	// ---
 
-	if (settings.textLog) 
-	{ 
+	if (settings.textLog)
+	{
 		lock_guard<mutex> lock(count_mtx);
-		cout << "After: [" << line << "]\n\n"; 
+		cout << "After: [" << line << "]\n\n";
 	}
 
 	{

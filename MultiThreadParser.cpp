@@ -14,6 +14,7 @@ int main()
 		cfg.textLog = true;
 		cfg.removePunctuation = true;
 		cfg.toLowerCase = true;
+		cfg.successfullySendToDatabaseMessage = true;
 
 		Parser parser(cfg);
 
