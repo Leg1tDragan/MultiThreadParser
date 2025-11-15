@@ -1,12 +1,11 @@
-﻿# CMakeList.txt: проект CMake для MultiThreadParser; включите исходный код и определения,
-# укажите здесь логику для конкретного проекта.
-#
+﻿cmake_minimum_required(VERSION 3.10)
 
-# Добавьте источник в исполняемый файл этого проекта.
-add_executable (MultiThreadParser "MultiThreadParser.cpp" "MultiThreadParser.h" "Parser/Parser.cpp" "Parser/Parser.h")
+project(MultiThreadParser)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET MultiThreadParser PROPERTY CXX_STANDARD 20)
-endif()
+set(CMAKE_CXX_STANDARD 20)
 
-# TODO: Добавьте тесты и целевые объекты, если это необходимо.
+add_executable (MultiThreadParser "MultiThreadParser.cpp" "MultiThreadParser.h" "Parser/Parser.cpp" "Parser/Parser.h" "Parser/Analytics.h" "Parser/ParseSettings.h" "Parser/Analytics.cpp" "Parser/ParseSettings.cpp")
+
+set_target_properties(MultiThreadParser PROPERTIES
+    WIN32_EXECUTABLE OFF
+)
