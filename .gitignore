@@ -1,0 +1,35 @@
+# Visual Studio
+.vs/
+*.vcxproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build / CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+CTestTestfile.cmake
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CMakeUserPresets.json
+_deps/
+Testing/
+
+# Output / binaries
+out/
+*.exe
+*.obj
+*.o
+*.dll
+*.lib
+*.pdb
+
+# CLion (если вдруг используешь)
+cmake-build-*/
+
+# Logs
+*.log
