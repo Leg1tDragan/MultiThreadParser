@@ -10,7 +10,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems
 
 find_package(libpqxx CONFIG REQUIRED)
 target_link_libraries(MultiThreadParser PRIVATE libpqxx::pqxx)
-    
+
 set_target_properties(MultiThreadParser PROPERTIES
     WIN32_EXECUTABLE OFF
 )
