@@ -4,10 +4,12 @@
 #include <cctype>
 #include <string>
 #include <iostream>
+#include <vector>
+#include <mutex>
 
 using namespace std;
 
-Parser::~Parser()
+Parser::~Parser()	
 {
 }
 
@@ -20,20 +22,57 @@ void Parser::resetAnalytics()
 	analytics = Analytics();
 }
 
-bool Parser::readFile(const string& file_path)
+void Parser::parseLines(vector<std::string>& lines)
+{
+	if (lines.empty()) { return; }
+
+	size_t num_threads = thread::hardware_concurrency();
+	if (num_threads == 0) { num_threads = 1; }
+
+	size_t total = lines.size();
+	size_t chunk = total / num_threads;
+
+	vector<thread> threads;
+
+	for (size_t i = 0; i < num_threads; i++)
+	{
+		size_t start = i * chunk;
+		size_t end = (i == num_threads - 1) ? total : start + chunk;
+
+		threads.emplace_back([this, &lines, start, end]()
+			{
+				for (size_t j = start; j < end; j++)
+				{
+					string line_copy = lines[j];
+					this->parseLine(line_copy);
+				}
+			});
+	}
+	for (auto& t : threads) { t.join(); }
+}
+
+vector<string> Parser::loadLines(const string& file_path)
 {
 	validatePath(file_path);
 	ifstream file(file_path);
-	if (file)
+	if (!file) { throw runtime_error("[Error] Something went wrong"); }
+
+	vector<string> lines;
+	string line;
+
+	while (getline(file, line))
 	{
-		string line;
-		while (getline(file, line))
-		{
-			parseLine(line);
-		}
+		lines.push_back(line);
 	}
-	else throw runtime_error("[Error] readFile method something wrong");
 	file.close();
+	return lines;
+}
+
+bool Parser::readFile(const string& file_path)
+{
+	validatePath(file_path);
+	auto lines = loadLines(file_path);
+	parseLines(lines);
 	return true;
 }
 
@@ -90,7 +129,14 @@ void Parser::validatePath(const std::string& file_path) const
 
 void Parser::parseLine(string& line)
 {
-	cout << "Before: [" << line << "]\n";
+	size_t localTotalWords = 0, localTotalDigits = 0, localTotalLetters = 0;
+	// ---
+
+	if (settings.textLog) 
+	{ 
+		lock_guard<mutex> lock(count_mtx);
+		cout << "Before: [" << line << "]\n"; 
+	}
 
 	// ---
 
@@ -98,7 +144,7 @@ void Parser::parseLine(string& line)
 
 	// ---
 
-	if (settings.removePunctuation == true)
+	if (settings.removePunctuation)
 	{
 		string newLine;
 		for (size_t i = 0; i < line.size(); i++)
@@ -129,7 +175,7 @@ void Parser::parseLine(string& line)
 	{
 		for (size_t i = 0; i < line.size(); i++)
 		{
-			if (isdigit(static_cast<unsigned char>(line[i]))) { analytics.totalDigits += 1; }
+			if (isdigit(static_cast<unsigned char>(line[i]))) { localTotalDigits += 1; }
 		}
 	}
 
@@ -153,15 +199,12 @@ void Parser::parseLine(string& line)
 
 	for (size_t i = 0; i < line.size(); i++)
 	{
-		bool isAlnum =
-			isalpha((unsigned char)line[i]) ||
-			isdigit((unsigned char)line[i]);
-
+		bool isAlnum = isalpha((unsigned char)line[i]) || isdigit((unsigned char)line[i]);
 		if (isAlnum)
 		{
 			if (!inWord)
 			{
-				analytics.totalWords++;
+				localTotalWords++;
 				inWord = true;
 			}
 		}
@@ -175,11 +218,22 @@ void Parser::parseLine(string& line)
 
 	for (size_t i = 0; i < line.size(); i++)
 	{
-		if (isalpha(static_cast<unsigned char>(line[i]))) { analytics.totalLetters += 1; }
+		if (isalpha(static_cast<unsigned char>(line[i]))) { localTotalLetters += 1; }
 	}
 
 	// ---
 
-	analytics.totalChars += line.size();
-	cout << "After: [" << line << "]\n\n";
+	if (settings.textLog) 
+	{ 
+		lock_guard<mutex> lock(count_mtx);
+		cout << "After: [" << line << "]\n\n"; 
+	}
+
+	{
+		lock_guard<mutex> lock(mtx);
+		analytics.totalDigits += localTotalDigits;
+		analytics.totalLetters += localTotalLetters;
+		analytics.totalWords += localTotalWords;
+		analytics.totalChars += line.size();
+	}
 }

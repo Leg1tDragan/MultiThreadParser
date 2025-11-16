@@ -11,12 +11,14 @@ int main()
 	{
 		ParseSettings cfg;
 		cfg.ignoreDigits = false;
+		cfg.textLog = true;
 		cfg.removePunctuation = true;
 		cfg.toLowerCase = true;
 
 		Parser parser(cfg);
 
-		parser.readFile("C:/test.txt");
+		parser.readFile("test.txt");
+
 		parser.printAnalytics();
 	}
 	catch (const std::exception& ex)
