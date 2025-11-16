@@ -6,4 +6,5 @@ struct ParseSettings
 	bool textLog = true;
 	bool removePunctuation = true; // removed punctuations
 	bool ignoreDigits = false; // ignored digits
+	bool successfullySendToDatabaseMessage = true; // message when successfullySendToDatabase
 };

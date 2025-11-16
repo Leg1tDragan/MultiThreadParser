@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <mutex>
+#include <pqxx/pqxx>
 
 using namespace std;
 
@@ -51,6 +52,39 @@ void Parser::parseLines(vector<std::string>& lines)
 	for (auto& t : threads) { t.join(); }
 }
 
+void Parser::saveToPostgreSQL(const std::string& file_path)
+{
+	try
+	{
+		pqxx::connection conn
+		(
+			"dbname=test "
+			"user=postgres "
+			"password=3507Aa3507! "
+			"host=localhost "
+			"port=5432 "
+		);
+
+		pqxx::work txn(conn);
+		txn.exec_params
+		(
+			"INSERT INTO analytics (file_path, total_words, total_chars, total_letters, total_digits) "
+			"VALUES ($1, $2, $3, $4, $5)",
+			file_path,
+			static_cast<long long>(analytics.totalWords),
+			static_cast<long long>(analytics.totalChars),
+			static_cast<long long>(analytics.totalLetters),
+			static_cast<long long>(analytics.totalDigits)
+		);
+		txn.commit();
+		if (settings.successfullySendToDatabaseMessage == true) { cout << "[Approved] Analytics sent (database)" << endl; }
+	}
+	catch (const std::exception& e)
+	{
+		cerr << "[Error] saveToPostgreSql " << e.what() << endl;
+	}
+}
+
 vector<string> Parser::loadLines(const string& file_path)
 {
 	validatePath(file_path);
@@ -73,6 +107,9 @@ bool Parser::readFile(const string& file_path)
 	validatePath(file_path);
 	auto lines = loadLines(file_path);
 	parseLines(lines);
+
+	saveToPostgreSQL(file_path);
+
 	return true;
 }
 
@@ -199,12 +236,7 @@ void Parser::parseLine(string& line)
 
 	for (size_t i = 0; i < line.size(); i++)
 	{
-		bool isAlnum =
-			isalpha((unsigned char)line[i]) ||
-			isdigit((unsigned char)line[i]);
-
-			isdigit((unsigned char)line[i]);
-
+		bool isAlnum = isalpha((unsigned char)line[i]) || isdigit((unsigned char)line[i]);
 		if (isAlnum)
 		{
 			if (!inWord)
