@@ -153,9 +153,7 @@ void Parser::parseLine(string& line)
 
 	for (size_t i = 0; i < line.size(); i++)
 	{
-		bool isAlnum =
-			isalpha((unsigned char)line[i]) ||
-			isdigit((unsigned char)line[i]);
+		bool isAlnum = isalpha((unsigned char)line[i]) || isdigit((unsigned char)line[i]);
 
 		if (isAlnum)
 		{
