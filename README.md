@@ -1,37 +1,48 @@
-# Initial parsing engine implementation
-STILL IN DEVELOPMENT (my first project)
-This is the first stable version of the text parser.
+# MultiThreadParser
 
-## 🚀 Core features
-- Line-by-line parsing system
-- Whitespace normalization (`trimAndCollapse`)
-- Configurable preprocessing pipeline:
-  - lowercase conversion
-  - punctuation removal (with hyphen support)
-  - optional digit ignoring
-- Safe usage of `<cctype>` functions using `static_cast<unsigned char>` to avoid UB
+[![C++](https://img.shields.io/badge/C%2B%2B-11-00599C?style=flat&logo=c%2B%2B)](https://en.wikipedia.org/wiki/C%2B%2B)  
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-24292F?style=flat&logo=github)](https://github.com/Leg1tDragan/MultiThreadParser)  
+[![License](https://img.shields.io/badge/License-MIT-green)](https://opensource.org/licenses/MIT)
 
-- ## 📊 Analytics
-The parser now collects:
-- total words  
-- total letters  
-- total digits  
-- total characters
+## 🚀 Overview
 
-- ## 🛠 File validation
-Includes:
-- path checks  
-- file existence  
-- type check (regular file)  
-- size limit validation  
-- extension filtering (`.txt`, `.log`)
+**MultiThreadParser** is a high-performance, multi-threaded text parsing engine built with **C++11**. It processes large files efficiently. The parser supports various text transformations, file validation, and provides statistics on parsed data.
+---
 
-- ## 🔧 Code structure
-- `Parser` — text processing core  
-- `Analytics` — statistic counters  
-- `ParseSettings` — settings container  
-- `MultiThreadParser` — entry point for future multithread support  
+## 🔑 Key Features
+
+- **🚀 Multi-Threaded Parsing**:  
+  Accelerates the parsing process by splitting the task across multiple threads, ideal for large-scale data processing.
+
+- **⚙️ Customizable Preprocessing**:
+  - Convert text to lowercase.
+  - Remove punctuation (with support for hyphenation).
+  - Optionally filter digits.
+  - Custom text filters for preprocessing.
+
+- **📊 Analytics**:  
+  Collects statistics about the parsed content:
+  - Total words
+  - Total letters
+  - Total digits
+  - Total characters
+
+- **🔒 Safe Data Handling**:  
+  Uses `static_cast<unsigned char>` to ensure safe handling of characters, avoiding undefined behavior.
+
+- **🛠 File Validation**:  
+  Ensures the input file is valid, checking:
+  - File path existence
+  - Correct file type (regular files only)
+  - Size constraints
+  - Supported file extensions (e.g., `.txt`, `.log`)
 
 ---
 
-This version establishes the base architecture for future enhancements.
+## ⚡ Quick Start
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Leg1tDragan/MultiThreadParser.git
+cd MultiThreadParser
